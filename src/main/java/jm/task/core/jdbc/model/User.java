@@ -1,21 +1,22 @@
 package jm.task.core.jdbc.model;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
-@Table
+@Entity// выделить классы, связанные с базой данных
+@Table(name = "user")
 public class User {
-    @Id
+    @Id//первичный ключ
+    @Column(name = "Id")//соотнести поле-столбец
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column
+    @Column(name = "Name")
     private String name;
 
-    @Column
+    @Column(name = "lastName")
     private String lastName;
 
-    @Column
+    @Column(name = "age")
     private Byte age;
 
     public User() {
@@ -29,34 +30,42 @@ public class User {
     }
 
     public Long getId() {
+
         return id;
     }
 
     public void setId(Long id) {
+
         this.id = id;
     }
 
     public String getName() {
+
         return name;
     }
 
     public void setName(String name) {
+
         this.name = name;
     }
 
     public String getLastName() {
+
         return lastName;
     }
 
     public void setLastName(String lastName) {
+
         this.lastName = lastName;
     }
 
     public Byte getAge() {
+
         return age;
     }
 
     public void setAge(Byte age) {
+
         this.age = age;
     }
 

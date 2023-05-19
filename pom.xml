@@ -21,7 +21,8 @@
     </build>
 
     <dependencies>
-        <!--         Ваши зависимости-->
+        <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
+
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
             <groupId>junit</groupId>
@@ -30,11 +31,14 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.25</version>
+            <version>8.0.33</version>
         </dependency>
+
+
 
         <dependency>
             <groupId>org.hibernate.javax.persistence</groupId>
