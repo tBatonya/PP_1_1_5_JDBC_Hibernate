@@ -1,21 +1,20 @@
 package jm.task.core.jdbc.dao;
 
 import jm.task.core.jdbc.model.User;
-import jm.task.core.jdbc.util.Util;
 import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
+import org.hibernate.query.NativeQuery;
 
-import javax.persistence.Query;
 import java.util.List;
 
+import static jm.task.core.jdbc.util.Util.getSessionFactory;
+
 public class UserDaoHibernateImpl implements UserDao {
-    private static final SessionFactory sessionFactory = (SessionFactory) Util.getSessionFactory();
+    private static final SessionFactory sessionFactory = getSessionFactory();
 
     public UserDaoHibernateImpl() {
-
-
     }
 
     @Override
@@ -31,7 +30,7 @@ public class UserDaoHibernateImpl implements UserDao {
                     ")").addEntity(User.class).executeUpdate();
             session.getTransaction().commit();
         }catch (HibernateException e){
-            System.out.println("Table creating error");
+            throw new RuntimeException(e);
         }
     }
 
@@ -39,15 +38,19 @@ public class UserDaoHibernateImpl implements UserDao {
     public void dropUsersTable() {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            String sql = "DROP TABLE IF EXISTS userDB";
-            Query query = session.createSQLQuery(sql)
-                    .addEntity(User.class);
-            query.executeUpdate();
-            transaction.commit();
+            NativeQuery query = session
+                    .createSQLQuery("DROP TABLE IF EXISTS user");
+            try {
+                query.executeUpdate();
+                transaction.commit();
+            } catch (Exception e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+            }
         } catch (HibernateException e) {
-            System.out.println("Drop error");
+            throw new RuntimeException(e);
         }
-
     }
 
     @Override
@@ -68,33 +71,58 @@ public class UserDaoHibernateImpl implements UserDao {
 
     @Override
     public void removeUserById(long id) {
-        try (Session session = Util.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-
-            transaction.commit();
+            User userRemove = session.get(User.class, id);
+            try {
+                session.remove(userRemove);
+                transaction.commit();
+            } catch (Exception e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+            }
         } catch (HibernateException e) {
-            System.out.println("remove error");
+            throw new RuntimeException(e);
         }
     }
 
     @Override
     public List<User> getAllUsers() {
+        List<User> userList = null;
         try (Session session = sessionFactory.openSession()) {
-            return session.createQuery("FROM User", User.class).list();
+            Transaction transaction = session.beginTransaction();
+            try {
+                userList = session
+                        .createQuery("FROM User", User.class)
+                        .getResultList();
+                transaction.commit();
+                return userList;
+            } catch (Exception e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+            }
+        } catch (HibernateException e) {
+            throw new RuntimeException(e);
         }
+        return userList;
     }
-
     @Override
     public void cleanUsersTable() {
         try (Session session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
-            String sql = "TRUNCATE TABLE userDB";
-            Query query = session.createSQLQuery(sql)
-                    .addEntity(User.class);
-            query.executeUpdate();
-            transaction.commit();
-        } catch (IllegalArgumentException e) {
-            System.out.println("Truncation error");
+            NativeQuery query = session.createSQLQuery("DELETE FROM user");
+            try {
+                query.executeUpdate();
+                transaction.commit();
+            } catch (Exception e) {
+                if (transaction != null) {
+                    transaction.rollback();
+                }
+            }
+        } catch (HibernateException e) {
+            throw new RuntimeException(e);
         }
     }
 }
